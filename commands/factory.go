@@ -33,7 +33,6 @@ func Factory(args []string) (Command, error) {
 }
 
 func formatDate(from string) int64 {
-	fmt.Printf("%vT00:00:00Z", from)
 	parsed, err := time.Parse(
 		time.RFC3339, fmt.Sprintf("%vT00:00:00Z", from),
 	)
