@@ -9,14 +9,6 @@ export OPSGENIE_API_KEY={opsgenie_api_key}
 
 ## Run
 
-### help
-
-List client commands
-
-```
-go run main.go help
-```
-
 ### List alerts
 
 List alerts in an interval using the opsgenie createdAt attribute
