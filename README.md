@@ -19,4 +19,4 @@ go run main.go list-alerts {start_date} {end_date}(optional)
 
 **pattern date**: yyyy-MM-dd. *Ex: 2018-07-10*
 
-**range rule**: >= start_date AND < end_date
+**interval rule**: >= start_date AND < end_date
