@@ -17,13 +17,16 @@ func Factory(args []string) (Command, error) {
 	commandName := args[1]
 	switch commandName {
 	case "list-alerts":
-		if len(args) <= 2 {
+		if len(args) < 3 {
 			return nil, fmt.Errorf("Argument [from] required. Ex: ... list-alerts yyyy-MM-dd")
 		}
-		return ListAlertsCommand{
+		command := ListAlertsCommand{
 			from: args[2],
-			to:   args[3],
-		}, nil
+		}
+		if len(args) > 3 {
+			command.to = args[3]
+		}
+		return command, nil
 	default:
 		return nil, fmt.Errorf("Invalid command %v", commandName)
 	}
