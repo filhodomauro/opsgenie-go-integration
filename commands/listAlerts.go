@@ -84,6 +84,10 @@ func print(report map[string]AlertResult) (bool, error) {
 	}
 	defer file.Close()
 	writer := bufio.NewWriter(file)
+	_, err = writer.WriteString(fmt.Sprintln("alert,alertOcurrences,errorOcurrences"))
+	if err != nil {
+		return false, err
+	}
 	for k, alertResult := range report {
 		_, err := writer.WriteString(fmt.Sprintf("%v,%v,%v\n", k, alertResult.alertOcurrences, alertResult.errorOcurrences))
 		if err != nil {
