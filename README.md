@@ -11,7 +11,7 @@ export OPSGENIE_API_KEY={opsgenie_api_key}
 
 ### List alerts
 
-List alerts in an interval using the opsgenie createdAt attribute
+List alerts in an interval using the opsgenie createdAt attribute and generate a csv file **report.csv**
 
 ```
 go run main.go list-alerts {start_date} {end_date}(optional)
