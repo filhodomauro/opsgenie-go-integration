@@ -1,7 +1,9 @@
 package commands
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 
 	alerts "github.com/opsgenie/opsgenie-go-sdk/alertsv2"
 	ogcli "github.com/opsgenie/opsgenie-go-sdk/client"
@@ -16,11 +18,35 @@ type ListAlertsCommand struct {
 }
 
 type AlertResult struct {
-	alias string
+	alertOcurrences int
+	errorOcurrences int
 }
 
 // Call OpsGenie list alert api
 func (command ListAlertsCommand) Call(cli *ogcli.OpsGenieClient) {
+	alertChannel := make(chan alerts.Alert)
+	go listAlerts(command, cli, alertChannel)
+
+	report := make(map[string]AlertResult)
+	for alert := range alertChannel {
+		alertResult, found := report[alert.Alias]
+		if !found {
+			alertResult = AlertResult{
+				alertOcurrences: 0,
+				errorOcurrences: 0,
+			}
+		}
+		alertResult.alertOcurrences++
+		alertResult.errorOcurrences += alert.Count
+		report[alert.Alias] = alertResult
+	}
+	_, err := print(report)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func listAlerts(command ListAlertsCommand, cli *ogcli.OpsGenieClient, alertChannel chan alerts.Alert) {
 	alertCli, _ := cli.AlertV2()
 
 	query := generateQuery(command)
@@ -43,11 +69,29 @@ func (command ListAlertsCommand) Call(cli *ogcli.OpsGenieClient) {
 		} else {
 			hasMoreResult = len(response.RateLimitState) == limit
 			for _, alert := range response.Alerts {
-				fmt.Println(fmt.Sprintf("%v,%v,%v", alert.CreatedAt, alert.Alias, alert.Count))
+				alertChannel <- alert
 			}
 			offset = offset + limit
 		}
 	}
+	close(alertChannel)
+}
+
+func print(report map[string]AlertResult) (bool, error) {
+	file, err := os.Create("report.csv")
+	if err != nil {
+		return false, err
+	}
+	defer file.Close()
+	writer := bufio.NewWriter(file)
+	for k, alertResult := range report {
+		_, err := writer.WriteString(fmt.Sprintf("%v,%v,%v\n", k, alertResult.alertOcurrences, alertResult.errorOcurrences))
+		if err != nil {
+			return false, err
+		}
+	}
+	writer.Flush()
+	return true, nil
 }
 
 func generateQuery(command ListAlertsCommand) string {
