@@ -67,7 +67,7 @@ func listAlerts(command ListAlertsCommand, cli *ogcli.OpsGenieClient, alertChann
 		if err != nil {
 			panic(err)
 		} else {
-			hasMoreResult = len(response.RateLimitState) == limit
+			hasMoreResult = len(response.Paging.Next) > 0
 			for _, alert := range response.Alerts {
 				alertChannel <- alert
 			}
